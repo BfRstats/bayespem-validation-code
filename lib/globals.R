@@ -1,9 +1,9 @@
 add.config(
     verbose = TRUE,               # if TRUE, additional messages will be output for each script that is being run
     validation_study = list(
-        data_random_seed = 33,    # random seed for reproducible data generation
-        n_parsets = 1000,         # number of parameter sets
-        n_reps = 1000,            # number of replicate datasets for each parameter set
+        data_random_seed = 4,     # random seed for reproducible data generation
+        n_parsets = 20,           # number of parameter sets
+        n_reps = 20,              # number of replicate datasets for each parameter set
     
         # statistical parameters
         se_range = c(0.6, 1),     # range for true sensitivity values

@@ -5,7 +5,7 @@
 
 #' allow for cleaner output when sourcing scripts in the /src directory that use parallel execution:
 .suppressOutput <- function(expr) {
-    capture.output(suppressMessages(expr), file = "NULL")
+    capture.output(suppressMessages(expr), file = NULL)
 }
 
 #' generate consecutive data set id's:
