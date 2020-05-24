@@ -1,0 +1,109 @@
+---
+title: "Regression"
+output:
+    html_document:
+        toc: true
+        toc_depth: 2
+        toc_float: true
+---
+
+# Preparations
+
+Scale function for z-transformation:
+```{r}
+scale_this <- function(x){
+    (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+}
+```
+
+Join the bias/estimation error data frame with the design parameters and z-transform them:
+```{r}
+dat <- bias_df %>% 
+    left_join(datasets, by = "data_id") %>% 
+    select(data_id, data_case, par_id, rep_id, 
+           pi_true, se_true, sp_true, 
+           n, n_se, n_sp, 
+           `Bayesian-Mean`, `Rogan-Gladen`) %>% 
+    mutate(pi_true = scale_this(pi_true),
+           se_true = scale_this(se_true),
+           sp_true = scale_this(sp_true),
+           n       = scale_this(n),
+           n_se    = scale_this(n_se),
+           n_sp    = scale_this(n_sp)) %>%
+    rename(error_BM = `Bayesian-Mean`,
+           error_RG = `Rogan-Gladen`) %>% 
+    print()
+```
+
+Create a smaller subset:
+```{r}
+set.seed(13469671)
+sampled <- dat %>% 
+    sample_n(1e3)
+```
+
+
+# Rogan-Gladen estimator
+
+Linear regression of the Rogan-Gladen estimation error against the design parameters including 1st order interactions.
+
+## Subset
+
+```{r}
+fit_RG_sampled <- lm(
+    error_RG ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = sampled
+)
+summary(fit_RG_sampled)
+```
+
+```{r}
+plot(fit_RG_sampled)
+```
+
+## Full dataset
+
+```{r}
+fit_RG <- lm(
+    error_RG ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = dat
+)
+summary(fit_RG)
+```
+
+```{r}
+plot(fit_RG)
+```
+
+# Bayesian estimator (MCMC mean)
+
+Linear regression of the Bayesian mean's estimation error against the design parameters including 1st order interactions.
+
+## Subset
+
+```{r}
+fit_BM_sampled <- lm(
+    error_BM ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = sampled
+)
+summary(fit_BM_sampled)
+```
+
+```{r}
+plot(fit_BM_sampled)
+```
+
+
+## Full dataset
+
+```{r}
+fit_BM <- lm(
+    error_BM ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = dat
+)
+summary(fit_BM)
+```
+
+```{r}
+plot(fit_BM)
+```
