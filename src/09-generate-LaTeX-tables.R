@@ -67,9 +67,9 @@ tab3 <- datasets[1:10, ] %>%
            "$x_{\\SENS}$"  = x_se, 
            "$x_{\\SPEC}$"  = x_sp,
            "$x$"           = x,
-           "$\\SENS$"      = se, 
-           "$\\SPEC$"      = sp,
-           "$\\AP$"        = ap)
+           "$\\EstSENS$"      = se, 
+           "$\\EstSPEC$"      = sp,
+           "$\\EstAP$"        = ap)
 kable(tab3, "latex", booktabs = TRUE, linesep = "", align = "lrrrrrrrrrrrr", escape = escape) %>% 
     add_header_above(c("", "\\\\emph{Statistical}" = 3, "\\\\emph{Design}" = 3, "\\\\emph{Data}" = 3, "\\\\emph{MLE}" = 3), escape = escape) %>% 
     print()
