@@ -50,7 +50,7 @@ plot2a <- ggplot(estimates_by_datacase[data_case %in% c("all", "1", "2", "3"), ]
     geom_boxplot(col = "black", outlier.shape = NA,
                  width = box_width, show.legend = FALSE) +
     facet_wrap(~ data_case, ncol = 2, labeller = datacase_labeller) +
-    ylab("Bias") +
+    ylab("Estimation error") +
     coord_flip(ylim = c(-0.25, 0.25)) +
     theme_minimal_grid(font_size = 12) +
     theme(axis.title.x = element_text(margin = margin(1, 0, 0, 0, "lines")),
@@ -73,9 +73,9 @@ plot2b <- ggplot(bias_df, aes(x = `Rogan-Gladen`, y = `Bayesian-Mean`)) +
     geom_abline(intercept = bias_deming@para[1],
                 slope = bias_deming@para[2],
                 linetype = "dashed") + 
-    scale_x_continuous("Bias Rogan-Gladen",
+    scale_x_continuous("Estimation error Rogan-Gladen",
                        breaks = c(-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75)) +
-    scale_y_continuous("Bias Bayesian-Mean",
+    scale_y_continuous("Estimation error Bayesian-Mean",
                        breaks = c(-0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75)) +
     scale_alpha_continuous("Log of count within hexbin", breaks = 0:5) +
     scale_fill_continuous(guide = FALSE) +
