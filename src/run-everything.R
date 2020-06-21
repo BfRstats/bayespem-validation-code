@@ -16,6 +16,6 @@ source("src/09-generate-LaTeX-tables.R")
 #' Supplementary material.
 rmarkdown::render("src/supplementary_material/10-regression.Rmd")
 
-#' Knit the README.Rmd file to update the sessionInfo
+#' Render the README.Rmd file to update the sessionInfo
 #' in the README.md file:
-knitr::knit("README.Rmd")
+rmarkdown::render("README.Rmd", output_format = "github_document")
