@@ -1,0 +1,204 @@
+---
+title: "Linear Regression Analysis"
+output:
+    bookdown::html_document2: 
+      code_folding: hide
+      fig_height: 8
+      fig_width: 10
+      toc: yes
+      toc_depth: 3
+      toc_float:
+        collapsed: no
+      numer_sections: true
+      self_contained: true
+---
+
+<style>
+    body .main-container {
+        max-width: 1600px;
+    }
+</style>
+
+# Summary
+
+We conducted a regression analysis in which we have used linear models with the prevalence point estimate’s estimation error as dependent variable and all  z-transformed statistical and design variables (see Section \@ref(defs)) as well as first-order interactions as independent variables.
+The sections below present details on the regression coefficients and residual plots both for the Rogan-Gladen Estimator (Section \@ref(RG)) and the Bayesian estimator (Section \@ref(BM)) as well as a tornado plot comparing the sensitivity of the two estimator’s errors on the statistical and design variables (Section \@ref(comp)).
+
+The results suggest that the residual estimation error after adjusting prevalence estimates for diagnostic sensitivity and specificity does depend on the application scenario as represented by our design variables for samples sizes, true prevalence, true sensitivity and true specificity.
+However, the results show only very minor effects for the whole model and for the individual parameters as indicated by very small adjusted R-squared values and small linear regression coefficients for both the frequentist and the Bayesian methods.
+
+E.g., the strongest effect in our simulated data is exercised by the true prevalence on the Bayesian estimator.
+However, with an estimated regression coefficient of -0.008334 this means that if the true prevalence increases by, say, two standard deviation (for our simulated data with a uniform true prevalence distribution, this is equivalent to an increase by 0.58 on the original scale), the Bayesian estimator’s error decreases by 0.0167 on the original scale.
+
+Note that, interestingly, the sample size of the test application bears almost no influence on the estimation error at all, neither for the Bayesian nor the frequentist method.
+
+The residual plots show that for both estimators, the estimation error’s spread decreases with increasing true sensitivity and true specificity.
+The distribution of residuals for the true prevalence, on the other hand, is more asymmetric towards the lower as well as the upper end, reflecting the prevalence bounds of zero and one, respectively.
+E.g., for a very low true prevalence the estimation error could take large positive values but only small negative ones.
+
+# Preparations and Definitions {#defs}
+
+Design parameters:
+
+* n: Sample size for a test application
+* n_se: Sample size for a sensitivity validation study
+* n_sp: Sample size for a specificity validation study
+
+Statistical parameters:
+
+* pi_true: True prevalence
+* se_true: True sensitivity
+* sp_true: True specificity
+
+All parameters were z-transformed prior to the regression analysis.
+
+Estimation errors:
+
+* error_RG: Estimation error of the Rogan-Gladen estimator
+* error_BM: Estimation error of the Bayesian estimator
+
+The following data frame shows the z-transformed parameters and estimation errors for the first ten data sets.
+```{r prep, cache=TRUE}
+library(broom)
+library(ggResidpanel)
+scale_this <- function(x){
+    (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)
+}
+dat <- bias_df %>% 
+    left_join(datasets, by = "data_id") %>% 
+    select(data_id, par_id,
+           pi_true, se_true, sp_true, 
+           n, n_se, n_sp, 
+           `Bayesian-Mean`, `Rogan-Gladen`) %>% 
+    mutate(pi_true = scale_this(pi_true),
+           se_true = scale_this(se_true),
+           sp_true = scale_this(sp_true),
+           n       = scale_this(n),
+           n_se    = scale_this(n_se),
+           n_sp    = scale_this(n_sp)) %>%
+    rename(error_BM = `Bayesian-Mean`,
+           error_RG = `Rogan-Gladen`) %>% 
+  print()
+```
+
+# Rogan-Gladen Estimator {#RG}
+
+Linear regression of the Rogan-Gladen estimation error against the z-transformed parameters including 1st order interactions.
+```{r fit-RG, cache=TRUE}
+fit_RG <- lm(
+    error_RG ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = dat
+)
+summary(fit_RG)
+```
+
+## Diagnostic Residual Plots {#DRP-RG}
+```{r panel-RG, cache=TRUE}
+resid_panel(fit_RG, plots = "all")
+```
+
+```{r xpanel-RG, cache=TRUE}
+resid_xpanel(fit_RG)
+```
+
+## Tornado Plot {#TP-RG}
+```{r coefficients-RG, fig.height=6, cache=TRUE}
+tidy_RG <- tidy(fit_RG) %>% 
+    mutate(estimator = "Rogan-Gladen") %>% 
+    filter(term != "(Intercept)") %>% 
+    mutate(label = str_replace_all(term, "n_se", "n[Se]"),
+           label = str_replace_all(label, "n_sp", "n[Sp]"),
+           label = str_replace_all(label, "pi_true", "tilde(pi)"),
+           label = str_replace_all(label, "se_true", "tilde(Se)"),
+           label = str_replace_all(label, "sp_true", "tilde(Sp)"))
+tidy_RG %>% 
+    ggplot(aes(x = reorder(label, -estimate), y = estimate)) +
+    geom_col(width = 0.6, fill = "#969696", orientation = "x") +
+    scale_x_discrete(labels = function(l) parse(text=l)) +
+    scale_y_continuous("Estimate of linear regression coefficient", 
+                       breaks = scales::pretty_breaks(n = 7)) +
+    coord_flip() +
+    theme_bw(base_size = 12) +
+    theme(axis.title.x = element_text(margin = margin(1, 0, 0, 0, "lines")),
+          axis.title.y = element_blank(),
+          legend.key.width = unit(1.5, "lines"),
+          legend.key.height = unit(0.3, "lines")) +
+    panel_border()
+```
+
+# Bayesian Estimator (MCMC Mean) {#BM}
+
+Linear regression of the Bayesian mean's estimation error against the design parameters including 1st order interactions.
+```{r fit-BM, cache=TRUE}
+fit_BM <- lm(
+    error_BM ~ (pi_true + se_true + sp_true + n + n_se + n_sp)^2,
+    data = dat
+)
+summary(fit_BM)
+```
+
+## Diagnostic Residual Plots {#DRP-BM}
+```{r panel-BM, cache=TRUE}
+resid_panel(fit_BM, plots = "all")
+```
+
+```{r xpanel-BM, cache=TRUE}
+resid_xpanel(fit_BM)
+```
+
+## Tornado Plot {#TP-BM}
+```{r coefficients-BM, fig.height=6, cache=TRUE}
+library(stringr)
+tidy_BM <- tidy(fit_BM) %>% 
+    mutate(estimator = "Bayesian-Mean") %>% 
+    filter(term != "(Intercept)") %>% 
+    mutate(label = str_replace_all(term, "n_se", "n[Se]"),
+           label = str_replace_all(label, "n_sp", "n[Sp]"),
+           label = str_replace_all(label, "pi_true", "tilde(pi)"),
+           label = str_replace_all(label, "se_true", "tilde(Se)"),
+           label = str_replace_all(label, "sp_true", "tilde(Sp)"))
+tidy_BM %>% 
+    ggplot(aes(x = reorder(label, -estimate), y = estimate)) +
+    geom_col(width = 0.6, fill = "#d9d9d9", orientation = "x") +
+    scale_x_discrete(labels = function(l) parse(text=l)) +
+    scale_y_continuous("Estimate of linear regression coefficient", 
+                       breaks = scales::pretty_breaks(n = 7)) +
+    coord_flip() +
+    theme_bw(base_size = 12) +
+    theme(axis.title.x = element_text(margin = margin(1, 0, 0, 0, "lines")),
+          axis.title.y = element_blank(),
+          legend.key.width = unit(1.5, "lines"),
+          legend.key.height = unit(0.3, "lines")) +
+    panel_border()
+```
+
+# Comparison of the Estimators {#comp}
+```{r coeff-comparison, fig.height=6, cache=TRUE}
+bind_rows(tidy_BM, tidy_RG) %>%
+    mutate(estimator = factor(estimator, 
+                              levels = c("Bayesian-Mean", "Rogan-Gladen"),
+                              ordered = TRUE)) %>% 
+    mutate(abs_est = abs(estimate),
+           sign_est = sign(estimate)) %>%
+    group_by(term) %>%
+    mutate(max_abs = max(abs_est),
+           is_max = as.integer(abs_est == max_abs),
+           max  = is_max * sign_est * max_abs) %>%
+    ungroup() %>%
+    arrange(max, term) %>%
+    ggplot(aes(x = reorder(label, -max), y = estimate, 
+               fill = estimator)) +
+    geom_col(width = 0.8, position = "dodge") +
+    scale_x_discrete(labels = function(l) parse(text=l)) +
+    scale_y_continuous("Estimate of linear regression coefficient", 
+                       breaks = scales::pretty_breaks(n = 7)) +
+    scale_fill_manual("", values = c("#d9d9d9", "#969696"),
+                      guide = guide_legend(reverse = TRUE)) +
+    coord_flip() +
+    theme_bw(base_size = 12) +
+    theme(axis.title.x = element_text(margin = margin(1, 0, 0, 0, "lines")),
+          axis.title.y = element_blank(),
+          legend.key.width = unit(1.5, "lines"),
+          legend.key.height = unit(0.3, "lines")) +
+    panel_border()
+```

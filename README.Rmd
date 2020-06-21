@@ -2,15 +2,15 @@
 output: 
     github_document:
         toc: true
-title: R code for the article "Validation of a generic Bayesian method for prevalence estimation under misclassification"
+title: R code for the article "Comparison of Bayesian and frequentist methods for prevalence estimation under misclassification"
 author: Matthias Flor
 bibliography: references.bib
 ---
 
 <!-- This markdown document has been gerenated by knitting an R markdown file.-->
 
-This R project includes all relevant data and code for the validation.
-The project has been organized with the help of the ProjectTemplate package and adheres to its directory layout ^[For more details about ProjectTemplate, see http://projecttemplate.net].
+This R project includes all relevant data and code used for the study.
+The project has been organized with the help of the ProjectTemplate package (v0.9.0) and adheres to its directory layout ^[For more details about ProjectTemplate, see http://projecttemplate.net].
 
 All of the analyses have been run already (and some took a long time to complete!), so instead of re-running them you may prefer to just look at the script files in the `src` directory and the generated plots in the `graphs` directory.
 The validation study's configuration can be inspected in the `libs/globals.R` file. 
@@ -42,7 +42,7 @@ To load the project, follow these steps in order:
           "Hmisc", "snow", "snowfall",
           "rjags", "runjags", "coda",
           "mcr", "broman",
-          "knitr", "kableExtra", "latex2exp")
+          "bookdown", "broom", "ggResidpanel", "knitr", "kableExtra", "latex2exp", "rmarkdown")
     )
     ```
 
@@ -123,13 +123,15 @@ The file's names should be quite self-explanatory.
 * `07-generate-Fig3.R`  
 * `08-generate-Fig4.R` 
 * `09-generate-LaTeX-tables.R` 
+* `supplementary_material/10-regression.Rmd`
 * `run-everything.R` 
 
 # Replicating the study
 
 The full study is configured via `libs/globals.R` to have 1,000 parameter sets and 1,000 replicates for a total of 1,000,000 data sets.
-You can run each of the analyses in the `src` directory simply by typing `source("src/FILENAME")`.
+You can run each of the analyses in the `src` directory simply by typing `source("src/FILENAME.R")`.
 If you want to really re-run everything, make sure to source the files in the order indicated by the numbered filenames ^[**Warning:** Depending on your hardware, the script `src/03-run-Bayesian-prevalence-estimation.R` will probably take at least days to finish.].
+Running `rmarkdown::render("src/supplementary_material/10-regression.Rmd")` will produce a supplementary regression analysis HTML report.
 For convenience, an R script is provided in `src/run-everything.R` that includes all steps to reproduce the study.
 
 If you want to check whether everything works before replicating the full study, you may switch to the `toy-study` git branch which is equivalent to the full study but has just 20 parameter sets and 20 replicates for a total of 400 data sets (again, configured via `libs/globals.R`).

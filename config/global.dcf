@@ -14,7 +14,7 @@ libraries:
     parallel, snowfall,
     rjags, runjags, coda,
     mcr, broman,
-    knitr, kableExtra, latex2exp
+    bookdown, broom, ggResidpanel, knitr, kableExtra, latex2exp, rmarkdown
 as_factors: TRUE
 tables_type: tibble
 attach_internal_libraries: FALSE

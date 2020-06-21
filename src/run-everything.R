@@ -13,6 +13,9 @@ source("src/07-generate-Fig3.R")
 source("src/08-generate-Fig4.R")
 source("src/09-generate-LaTeX-tables.R")
 
+#' Supplementary material.
+rmarkdown::render("src/supplementary_material/10-regression.Rmd")
+
 #' Knit the README.Rmd file to update the sessionInfo
 #' in the README.md file:
 knitr::knit("README.Rmd")
