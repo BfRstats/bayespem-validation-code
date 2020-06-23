@@ -17,8 +17,11 @@ rjags
 runjags
 mcr
 broman
+bookdown
+broom
+ggResidpanel
 knitr
 kableExtra
 latex2exp
-broom
-ggResidpanel
+rmarkdown
+stargazer
